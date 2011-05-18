@@ -1,0 +1,77 @@
+html,body {
+	margin: 0;
+	padding: 0;
+}
+#timelineslider {
+	font-family: "Lucida sans", Helvetica, Arial, sans-serif;
+	font-size: 11px;
+	height: 20px;
+	position: relative;
+}
+.slider {
+	overflow-x: hidden;
+	overflow-y: visible;
+}
+.track {
+	border: 1px solid #969696;
+	height: 20px;
+	position: absolute;
+	width: 100%;
+}
+.periods {
+	height: 20px;
+}
+.period {
+	background: #FFF;
+	display: inline-block;
+	font-size: 10px;
+	height: 18px;
+}
+.period label {
+	display: none;
+	height: 20px;
+	padding: 3px;
+	position: relative;
+}
+.currentlevel>label {
+	border-left: 1px solid #000;
+	display: block;
+	z-index: 1
+}
+.currentlevel>.period>label {
+	border-left: 1px solid #BBB;
+	display: block;
+	top: -30px;
+}
+.currentlevel>.period>label>span {
+	display: none;
+}
+.thumb {
+	background: url(../img/thumbleft_bg.png) no-repeat left center;
+	cursor: pointer;
+	height: 35px;
+	top: -6px;
+	z-index: 2;
+}
+.thumb label {
+	background: url(../img/thumbright_bg.png) no-repeat right center;
+	color: #FFF;
+	display: block;
+	height: 17px;
+	margin-left: 8px;
+	overflow: hidden;
+	padding: 9px 8px 9px 0;
+	text-align: center;
+	white-space: nowrap;
+}
+.handle {
+	background: url(../img/handle_bg.png) no-repeat center center;
+	cursor: e-resize;
+	height: 35px;
+	top: -6px;
+	width: 20px;
+	z-index: 3;
+}
+.handle.left {
+	cursor: w-resize;
+}
