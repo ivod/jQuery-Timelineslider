@@ -29,7 +29,7 @@
  * scrollspeed			- scroll speed for autoscroll feature, 0 to disable autoscroll
  * step					- minimal width (in pixels) of the period in the timeline
  * to					- index of the last period in selection
- * zoom					- initial zoom level
+ * zoomlevel			- initial zoom level
  * 
  * EVENTS:
  * To add an eventlistener, add this to the option list on init: onEventName: function(){do stuff}
@@ -46,22 +46,14 @@
  * 
  * METHODS:
  * To call a method, use $(selector).timelineSlider("nameOfMethod", parameters)
- * from([index])			- sets from value, when index is omitted gets from value
+ * from([index])		- sets from value, when index is omitted gets from value
  * to([index])			- sets to value, when index is omitted gets to value
  * setValue(val)		- sets a new from and to value, accepts an object with from and to {from:val1,to:val2} // OBSOLETE
- * values([val])			- sets sets a new from and to value, accepts an object with from and to {from:val1,to:val2}, when omitted gets values object
- * setZoomLevel(level)	- sets the zoom level, accepts integer
+ * values([val])		- sets sets a new from and to value, accepts an object with from and to {from:val1,to:val2}, when omitted gets values object
+ * setZoomLevel(level)	- sets the zoom level, accepts integer // OBSOLETE
+ * zoom([level])		- sets zoomlevel value, when level is omitted gets zoomlevel value
  * destroy				- removes the timelineslider component
  */
-
-/* TODO: calculate step size for exact period fit, based on preferred width (step parameter) OR ANY OTHER SOLUTION TO THIS PROBLEM */
-/* TODO: autoscroll on scale */
-/* TODO: Show period status (data/no data) */
-/* TODO: Show indicator */
-
-/* KNOWN BUG: thumb is centered after scroll when it was at maximum position */
-/* KNOWN BUG: can't select last period when step is not exactly right to fit in screen */
-/* KNOWN BUG: destroy doesn't work */
 
 (function($) {
 
@@ -74,7 +66,7 @@ var methods = {
 					maxlevel : 1,
 					from : 0,
 					to : 1,
-					zoom : 1,
+					zoomlevel : 1,
 					minzoom : 1,
 					maxzoom : 3,
 					zoomspeed : 1,
@@ -102,6 +94,7 @@ var methods = {
 			// Set attributes
 			timelineslider.data( "from", timelineslider.data().settings.from );
 			timelineslider.data( "to", timelineslider.data().settings.to );
+			timelineslider.data( "zoomlevel", timelineslider.data().settings.zoomlevel );
 			// Bind events
 			timelineslider.bind( "zoom.timelineSlider", { settings: timelineslider.data( "settings" ) }, methods.zoom);
 
@@ -182,11 +175,23 @@ var methods = {
 			return val;
 		}
 	},
+	
+	zoomlevel : function( l ) {
+		if ( l ) {
+			this.data().zoomlevel = l;
+			this.timelineSlider( "zoom" );
+			this.timelineSlider( "refresh" );
+			return this;
+		} else {
+			return this.data().zoomlevel;
+		}
+	},
 
 	// Create functions
 
 	createPeriods : function() {
-		var settings = $(this).data("settings");
+		var timelineslider = $(this);
+		var settings = timelineslider.data("settings");
 		var periods = $("<div>").addClass( "periods" );
 		var level = 1;
 		$.each( settings.periods, function( key, val ) {
@@ -210,7 +215,7 @@ var methods = {
 			var p = $("<div>").addClass( "period" )
 			.addClass( val.type )
 			.addClass( "level" + level )
-			.css( "min-width", settings.zoom * settings.step );
+			.css( "min-width", timelineslider.data().zoomlevel * settings.step );
 			var l = $("<label>").append( $("<span>").text( val.name ) );
 			p.append( l );
 			return p;
@@ -249,7 +254,7 @@ var methods = {
 		var handleleft = $("<div>")
 		.addClass( "handle" )
 		.addClass( "left" )
-		.draggable( { axis:'x', grid: [ ( settings.zoom * settings.step ), 0 ] } )
+		.draggable( { axis:'x', grid: [ ( timelineslider.data().zoomlevel * settings.step ), 0 ] } )
 		.bind( "dragstart.timelineSlider", methods.startScale )
 		.bind( "drag.timelineSlider", methods.scale )
 		.bind( "dragstop.timelineSlider", methods.stopScale )
@@ -260,7 +265,7 @@ var methods = {
 		.addClass( "handle" )
 		.addClass( "right" )
 		.css( "top", -1 * settings.height - 6 + "px" )
-		.draggable( { axis:'x', grid: [ ( settings.zoom * settings.step ), 0 ] } )
+		.draggable( { axis:'x', grid: [ ( timelineslider.data().zoomlevel * settings.step ), 0 ] } )
 		.bind( "dragstart.timelineSlider", methods.startScale )
 		.bind( "drag.timelineSlider", methods.scale )
 		.bind( "dragstop.timelineSlider", methods.stopScale )
@@ -351,7 +356,7 @@ var methods = {
 	// General functions
 	
 	refresh : function() {
-		this.data().thumb.width( ( this.data().to - this.data().from ) * ( this.data().settings.zoom * this.data().settings.step ) );
+		this.data().thumb.width( ( this.data().to - this.data().from ) * ( this.data().zoomlevel * this.data().settings.step ) + 2 );
 		this.timelineSlider( "centerSlider" );
 		this.timelineSlider( "setThumbLabel" );
 	},
@@ -364,7 +369,7 @@ var methods = {
 		// Calculate left position of a centered thumb
 		var leftcentered = ( track.width() - thumb.width() ) / 2 ;
 		thumb.css( "left", leftcentered + "px" );
-		track.scrollLeft( timelineslider.data().from * ( settings.zoom * settings.step ) - leftcentered );
+		track.scrollLeft( timelineslider.data().from * ( timelineslider.data().zoomlevel * settings.step ) - leftcentered );
 		// Update handle positions
 		timelineslider.timelineSlider( "updateHandles" );
 	},
@@ -384,15 +389,15 @@ var methods = {
 		handleright.css("left", r + "px");
 		// Set new handle containment
 		handleleft.draggable( "option", "containment", [ 0, 0, r, 0] );
-		handleright.draggable( "option", "containment", [ Number(l) + ( settings.zoom * settings.step ), 0, track.width(), 0] );
+		handleright.draggable( "option", "containment", [ Number(l) + ( timelineslider.data().zoomlevel * settings.step ), 0, track.width(), 0] );
 	},
 	setThumbLabel : function() {
 		var timelineslider = $(this);
 		var thumb = timelineslider.data().thumb;
 		var track = timelineslider.data().track;
 		var settings = timelineslider.data().settings;
-		var from_index = Math.round((track.scrollLeft() + Number(thumb.css("left").substring(0, thumb.css("left").indexOf("px")))) / (settings.zoom * settings.step));
-		var to_index = Math.round(from_index + thumb.width() / (settings.zoom * settings.step));
+		var from_index = Math.round((track.scrollLeft() + Number(thumb.css("left").substring(0, thumb.css("left").indexOf("px")))) / (timelineslider.data().zoomlevel * settings.step));
+		var to_index = Math.round(from_index + thumb.width() / (timelineslider.data().zoomlevel * settings.step));
 		if ( to_index - from_index > 1 ) {
 			var label = settings.periods_flat[from_index].name + " - " + settings.periods_flat[to_index-1].name;
 		} else {
@@ -406,8 +411,8 @@ var methods = {
 		var settings = data.settings;
 		var track = timelineslider.data().track;
 		var thumb = timelineslider.data().thumb;
-		var from_index = Math.round( (track.scrollLeft() + Number(thumb.css("left").substring(0, thumb.css("left").indexOf("px")))) / (settings.zoom * settings.step) );
-		var to_index = Math.round( from_index + thumb.width() / (settings.zoom * settings.step) );
+		var from_index = Math.round( (track.scrollLeft() + Number(thumb.css("left").substring(0, thumb.css("left").indexOf("px")))) / (timelineslider.data().zoomlevel * settings.step) );
+		var to_index = Math.round( from_index + thumb.width() / (timelineslider.data().zoomlevel * settings.step) );
 		// Check whether value has changed
 		if ( from_index != data.from || to_index != data.to ) {
 			// Store new values
@@ -468,14 +473,14 @@ var methods = {
 		var handleleft = timelineslider.data().handleleft;
 		var handleright = timelineslider.data().handleright;
 		// Animate track
-		track.not( ':animated' ).animate( { scrollLeft: track.scrollLeft() + dir * ( settings.zoom * settings.step ) }, 500 / settings.scrollspeed, function() {
+		track.not( ':animated' ).animate( { scrollLeft: track.scrollLeft() + dir * ( timelineslider.data().zoomlevel * settings.step ) }, 500 / settings.scrollspeed, function() {
 			// Set thumb label
 			timelineslider.timelineSlider( "setThumbLabel" );
 		});
 		// Animate thumb
 		handleleft.hide();
 		handleright.hide();
-		thumb.not( ':animated' ).animate( { left: '+=' + dir * ( settings.zoom * settings.step ) * -1 }, 500 / settings.scrollspeed, function() {
+		thumb.not( ':animated' ).animate( { left: '+=' + dir * ( timelineslider.data().zoomlevel * settings.step ) * -1 }, 500 / settings.scrollspeed, function() {
 			timelineslider.timelineSlider( "updateHandles" );
 			handleleft.show();
 			handleright.show();
@@ -565,7 +570,7 @@ var methods = {
 			var tml = Number( thumb.css( "margin-left" ).substring( 0, thumb.css( "margin-left" ).indexOf( "px" ) ) );
 			thumb.css( "left", tl + tml + "px" ).css( "margin-left", "0px" );
 			thumb.draggable( "destroy" );
-			thumb.draggable( { axis: 'x', containment: 'parent', grid: [(timelineslider.data().settings.zoom * timelineslider.data().settings.step), 0] } );
+			thumb.draggable( { axis: 'x', containment: 'parent', grid: [(timelineslider.data().zoomlevel * timelineslider.data().settings.step), 0] } );
 		}
 		// END NEW CODE
 		// Set thumb label
@@ -585,7 +590,7 @@ var methods = {
 		timelineslider.trigger( "onSlideStop" );
 	},
 	autoScroll : function( timelineslider ) {
-		var step = timelineslider.data().settings.zoom * timelineslider.data().settings.step;
+		var step = timelineslider.data().zoomlevel * timelineslider.data().settings.step;
 		var scrollspeed = timelineslider.data().settings.scrollspeed;
 		var track = timelineslider.data().track;
 		var periods = timelineslider.data().periods;
@@ -623,23 +628,23 @@ var methods = {
 	scrollZoom : function(event, delta) {
 		var timelineslider = $(this).data().timelineslider;
 		var settings = timelineslider.data().settings;
-		if ( delta > 0 && settings.zoom + 0.1 <= settings.maxzoom ) {
+		if ( delta > 0 && timelineslider.data().zoomlevel + 0.1 <= settings.maxzoom ) {
 			// Zoom in
-			settings.zoom += settings.zoomspeed;
+			timelineslider.data().zoomlevel += settings.zoomspeed;
 			timelineslider.trigger("zoom");
 			// TODO: is this zoom event same as onZoomChange?
-		} else if ( delta < 0 && settings.zoom - 0.1 >= settings.minzoom ) {
+		} else if ( delta < 0 && timelineslider.data().zoomlevel - 0.1 >= settings.minzoom ) {
 			// Zoom out
-			settings.zoom -= settings.zoomspeed;
+			timelineslider.data().zoomlevel -= settings.zoomspeed;
 			timelineslider.trigger("zoom");
 		}
 	},
 	setZoomLevel : function( diff ) {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
-		if ( settings.zoom + diff >= settings.minzoom && settings.zoom + diff <= settings.maxzoom ) {
+		if ( timelineslider.data().zoomlevel + diff >= settings.minzoom && timelineslider.data().zoomlevel + diff <= settings.maxzoom ) {
 			// Set zoom level
-			settings.zoom += diff;
+			timelineslider.data().zoomlevel += diff;
 			timelineslider.trigger("zoom");
 		}
 	},
@@ -649,25 +654,25 @@ var methods = {
 		var from = timelineslider.data().from;
 		var to = timelineslider.data().to;
 		// Resize periods
-		timelineslider.data().periods.find(".period").css("min-width", settings.zoom*settings.step);
+		timelineslider.data().periods.find(".period").css("min-width", timelineslider.data().zoomlevel * settings.step);
 		// Reset currentlevel
 		timelineslider.data().periods.find(".period").removeClass("currentlevel");
 		// Set currentlevel
-		var level = Math.round( settings.zoom );
+		var level = Math.round( timelineslider.data().zoomlevel );
 		if ( level > settings.maxlevel ) {
 			level = settings.maxlevel;
 		}
 		timelineslider.data().periods.find( ".level" + level ).addClass("currentlevel");
 		// Set thumb
 		timelineslider.data().thumb
-		.width((settings.zoom * settings.step) * (to - from) + 2)
-		.css("left", (settings.zoom * settings.step) * from + "px");
+		.width((timelineslider.data().zoomlevel * settings.step) * (to - from) + 2)
+		.css("left", (timelineslider.data().zoomlevel * settings.step) * from + "px");
 		// Center slider
 		timelineslider.timelineSlider("centerSlider", $(this));
 		// Set new grid
-		timelineslider.data().thumb.draggable("option", "grid", [(settings.zoom * settings.step), 0]);
-		timelineslider.data().handleleft.draggable("option", "grid", [(settings.zoom * settings.step), 0]);
-		timelineslider.data().handleright.draggable("option", "grid", [(settings.zoom * settings.step), 0]);
+		timelineslider.data().thumb.draggable("option", "grid", [(timelineslider.data().zoomlevel * settings.step), 0]);
+		timelineslider.data().handleleft.draggable("option", "grid", [(timelineslider.data().zoomlevel * settings.step), 0]);
+		timelineslider.data().handleright.draggable("option", "grid", [(timelineslider.data().zoomlevel * settings.step), 0]);
 		// Trigger zoom event
 		timelineslider.trigger("onZoomChange");
 	}
