@@ -26,14 +26,14 @@
  * maxzoom 				- the maximum zoom level, equal to the deepest period level
  * minzoom 				- minimum zoom level
  * periods 				- JSON object representing the periods, optionally hierarchical
- * scrollspeed			- scroll speed for autoscroll feature, 0 to disable autoscroll
+ * scrollspeed			- scroll speed for _autoScroll feature, 0 to disable _autoScroll
  * step					- minimal width (in pixels) of the period in the timeline
  * to					- index of the last period in selection
  * zoomlevel			- initial zoom level
  * 
  * EVENTS:
  * To add an eventlistener, add this to the option list on init: onEventName: function(){do stuff}
- * onAutoScroll			- triggered when timelineslider is autoscrolling (when thumb is dragged beyond the viewpane)
+ * onAutoScroll			- triggered when timelineslider is _autoScrolling (when thumb is dragged beyond the viewpane)
  * onCreate				- triggered right after creation of the timelineslider 
  * onScaleStart			- triggered when the left or right thumb handles start to get dragged
  * onScale				- triggered when the left or right thumb handles are being dragged
@@ -52,6 +52,7 @@
  * values([val])		- sets sets a new from and to value, accepts an object with from and to {from:val1,to:val2}, when omitted gets values object
  * setZoomLevel(level)	- sets the zoom level, accepts integer // OBSOLETE
  * zoom([level])		- sets zoomlevel value, when level is omitted gets zoomlevel value
+ * getPeriod(index)		- returns the period object with the given index
  * destroy				- removes the timelineslider component
  */
 
@@ -96,36 +97,36 @@ var methods = {
 			timelineslider.data( "to", timelineslider.data().settings.to );
 			timelineslider.data( "zoomlevel", timelineslider.data().settings.zoomlevel );
 			// Bind events
-			timelineslider.bind( "zoom.timelineSlider", { settings: timelineslider.data( "settings" ) }, methods.zoom);
+			timelineslider.bind( "zoom.timelineSlider", { settings: timelineslider.data( "settings" ) }, methods._doZoom);
 
 			// Create slider
-			timelineslider.data( "slider", timelineslider.timelineSlider( "createSlider" ) );
+			timelineslider.data( "slider", timelineslider.timelineSlider( "_createSlider" ) );
 			// Create indicator and hide
-			// timelineslider.data( "indicator", timelineslider.timelineSlider( "createIndicator" ).hide() );
+			// timelineslider.data( "indicator", timelineslider.timelineSlider( "_createIndicator" ).hide() );
 			// Create zoom controls
-			timelineslider.data( "zoomcontrols", timelineslider.timelineSlider( "createZoomControls" ) );
+			timelineslider.data( "zoomcontrols", timelineslider.timelineSlider( "_createZoomControls" ) );
 			// Create scroll controls
-			timelineslider.data( "scrollcontrols", timelineslider.timelineSlider( "createScrollControls" ) );
+			timelineslider.data( "scrollcontrols", timelineslider.timelineSlider( "_createScrollControls" ) );
 
 			// Add components to DOM
 			timelineslider.prepend( timelineslider.data( "slider" ) ).append( timelineslider.data( "indicator" ) );
 
 			// Init zoom level slider
-			timelineslider.timelineSlider( "zoom" );
+			timelineslider.timelineSlider( "_doZoom" );
 			// Init thumb label
-			timelineslider.timelineSlider( "setThumbLabel" );
+			timelineslider.timelineSlider( "_setThumbLabel" );
 
 			// Init events
-			timelineslider.bind( "onCreate", settings.onCreate );
-			timelineslider.bind( "onValueChange", settings.onValueChange );
-			timelineslider.bind( "onZoomChange", settings.onZoomChange );
-			timelineslider.bind( "onSlideStart", settings.onSlideStart );
-			timelineslider.bind( "onSlide", settings.onSlide );
-			timelineslider.bind( "onSlideStop", settings.onSlideStop );
-			timelineslider.bind( "onScaleStart", settings.onScaleStart );
-			timelineslider.bind( "onScale", settings.onScale );
-			timelineslider.bind( "onScaleStop", settings.onScaleStop );
-			timelineslider.bind( "onAutoScroll", settings.onAutoScroll );
+			timelineslider.bind( "onCreate", options.onCreate );
+			timelineslider.bind( "onValueChange", options.onValueChange );
+			timelineslider.bind( "onZoomChange", options.onZoomChange );
+			timelineslider.bind( "onSlideStart", options.onSlideStart );
+			timelineslider.bind( "onSlide", options.onSlide );
+			timelineslider.bind( "onSlideStop", options.onSlideStop );
+			timelineslider.bind( "onScaleStart", options.onScaleStart );
+			timelineslider.bind( "onScale", options.onScale );
+			timelineslider.bind( "onScaleStop", options.onScaleStop );
+			timelineslider.bind( "onAutoScroll", options.onAutoScroll );
 			
 			// Trigger create event
 			timelineslider.trigger( "onCreate" );
@@ -147,7 +148,7 @@ var methods = {
 	from : function( i ) {
 		if ( i ) {
 			this.data().from = i;
-			this.timelineSlider( "refresh" );
+			this.timelineSlider( "_refresh" );
 			return this;
 		} else {
 			return this.data().from;
@@ -157,7 +158,7 @@ var methods = {
 	to : function( i ) {
 		if ( i ) {
 			this.data().to = i;
-			this.timelineSlider( "refresh" );
+			this.timelineSlider( "_refresh" );
 			return this;
 		} else {
 			return this.data().to;
@@ -168,7 +169,7 @@ var methods = {
 		if ( val ) {
 			this.data().from = val.from;
 			this.data().to = val.to;
-			this.timelineSlider( "refresh" );
+			this.timelineSlider( "_refresh" );
 			return this;
 		} else {
 			var val = { "from" : this.data().from, "to" : this.data().to };
@@ -179,8 +180,8 @@ var methods = {
 	zoomlevel : function( l ) {
 		if ( l ) {
 			this.data().zoomlevel = l;
-			this.timelineSlider( "zoom" );
-			this.timelineSlider( "refresh" );
+			this.timelineSlider( "_doZoom" );
+			this.timelineSlider( "_refresh" );
 			return this;
 		} else {
 			return this.data().zoomlevel;
@@ -189,7 +190,7 @@ var methods = {
 
 	// Create functions
 
-	createPeriods : function() {
+	_createPeriods : function() {
 		var timelineslider = $(this);
 		var settings = timelineslider.data("settings");
 		var periods = $("<div>").addClass( "periods" );
@@ -222,12 +223,12 @@ var methods = {
 		}
 		return periods;
 	},
-	createSlider : function() {
+	_createSlider : function() {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
 		// Create slider container
 		var slider = $("<div>").addClass( "slider" )
-		.bind( "mousewheel.timelineSlider", methods.scrollZoom )
+		.bind( "mousewheel.timelineSlider", methods._scrollZoom )
 		.data( "timelineslider", timelineslider );
 		// Create track
 		var track = $("<div>")
@@ -237,7 +238,7 @@ var methods = {
 		.data( "timelineslider", timelineslider );
 		timelineslider.data().track = track;
 		// Create periods
-		var periods = timelineslider.timelineSlider( "createPeriods" );
+		var periods = timelineslider.timelineSlider( "_createPeriods" );
 		timelineslider.data().periods = periods;
 		// Create thumb
 		var thumb = $("<div>")
@@ -245,9 +246,9 @@ var methods = {
 		.addClass( "thumb" )
 		.draggable( { axis:'x', containment: 'parent' } )
 		.css( "position", "absolute")
-		.bind( "dragstart.timelineSlider", methods.startSlide )
-		.bind( "drag.timelineSlider", { timelineslider: timelineslider }, methods.slide )
-		.bind( "dragstop.timelineSlider", { timelineslider: timelineslider }, methods.stopSlide )
+		.bind( "dragstart.timelineSlider", methods._startSlide )
+		.bind( "drag.timelineSlider", { timelineslider: timelineslider }, methods._slide )
+		.bind( "dragstop.timelineSlider", { timelineslider: timelineslider }, methods._stopSlide )
 		.data( "timelineslider", timelineslider );
 		timelineslider.data().thumb = thumb;
 		// Create left handle
@@ -255,9 +256,9 @@ var methods = {
 		.addClass( "handle" )
 		.addClass( "left" )
 		.draggable( { axis:'x', grid: [ ( timelineslider.data().zoomlevel * settings.step ), 0 ] } )
-		.bind( "dragstart.timelineSlider", methods.startScale )
-		.bind( "drag.timelineSlider", methods.scale )
-		.bind( "dragstop.timelineSlider", methods.stopScale )
+		.bind( "dragstart.timelineSlider", methods._startScale )
+		.bind( "drag.timelineSlider", methods._scale )
+		.bind( "dragstop.timelineSlider", methods._stopScale )
 		.data( "timelineslider", timelineslider );
 		timelineslider.data().handleleft = handleleft;
 		// Create right handle
@@ -266,16 +267,16 @@ var methods = {
 		.addClass( "right" )
 		.css( "top", -1 * settings.height - 6 + "px" )
 		.draggable( { axis:'x', grid: [ ( timelineslider.data().zoomlevel * settings.step ), 0 ] } )
-		.bind( "dragstart.timelineSlider", methods.startScale )
-		.bind( "drag.timelineSlider", methods.scale )
-		.bind( "dragstop.timelineSlider", methods.stopScale )
+		.bind( "dragstart.timelineSlider", methods._startScale )
+		.bind( "drag.timelineSlider", methods._scale )
+		.bind( "dragstop.timelineSlider", methods._stopScale )
 		.data( "timelineslider", timelineslider );
 		timelineslider.data().handleright = handleright;
 		// Create slider
 		var new_slider = slider.append( track.append( periods ) ).append( thumb ).append( handleleft ).append( handleright );
 		return new_slider;
 	},
-	/*createIndicator : function() {
+	/*_createIndicator : function() {
 			// Create indicator container
 			var indicator = $("<div>").addClass( "indicator" )
 				.bind( "zoom.timelineSlider", function() {
@@ -291,7 +292,7 @@ var methods = {
 			var new_indicator = indicator.append( track ).append( thumb );
 			return new_indicator;
 		},*/
-	createZoomControls : function() {
+	_createZoomControls : function() {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
 		var zoomin = timelineslider.find( "#zoomin" );
@@ -325,14 +326,14 @@ var methods = {
 		var zoomcontrols = { "zoomin" : zoomin, "zoomout" : zoomout };
 		return zoomcontrols;
 	},
-	createScrollControls : function() {
+	_createScrollControls : function() {
 		var timelineslider = $(this);
 		var scrollleft = timelineslider.find( "#scrollleft" );
 		var scrollright = timelineslider.find( "#scrollright" );
 		if ( scrollleft.length ) {
 			// Create scroll left button
 			scrollleft.bind( "mousedown", function( e ) {
-				timelineslider.data( "scrolling", setInterval( function( e ) { timelineslider.timelineSlider( "doScroll", -1 ) }, 100) );
+				timelineslider.data( "scrolling", setInterval( function( e ) { timelineslider.timelineSlider( "_doScroll", -1 ) }, 100) );
 			})
 			.bind( "mouseup", function() {
 				clearInterval( timelineslider.data( "scrolling" ) );
@@ -342,7 +343,7 @@ var methods = {
 		if ( scrollright.length ) {
 			// Create scroll right button
 			scrollright.bind( "mousedown", function( e ) {
-				timelineslider.data( "scrolling", setInterval( function( e ) { timelineslider.timelineSlider( "doScroll", 1 ) }, 100) );
+				timelineslider.data( "scrolling", setInterval( function( e ) { timelineslider.timelineSlider( "_doScroll", 1 ) }, 100) );
 			})
 			.bind( "mouseup", function() {
 				clearInterval( timelineslider.data( "scrolling" ) );
@@ -355,13 +356,13 @@ var methods = {
 
 	// General functions
 	
-	refresh : function() {
+	_refresh : function() {
 		this.data().thumb.width( ( this.data().to - this.data().from ) * ( this.data().zoomlevel * this.data().settings.step ) + 2 );
-		this.timelineSlider( "centerSlider" );
-		this.timelineSlider( "setThumbLabel" );
+		this.timelineSlider( "_centerSlider" );
+		this.timelineSlider( "_setThumbLabel" );
 	},
 
-	centerSlider : function() {
+	_centerSlider : function() {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
 		var track = timelineslider.data().track;
@@ -371,9 +372,9 @@ var methods = {
 		thumb.css( "left", leftcentered + "px" );
 		track.scrollLeft( timelineslider.data().from * ( timelineslider.data().zoomlevel * settings.step ) - leftcentered );
 		// Update handle positions
-		timelineslider.timelineSlider( "updateHandles" );
+		timelineslider.timelineSlider( "_updateHandles" );
 	},
-	updateHandles : function() {
+	_updateHandles : function() {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
 		var track = timelineslider.data().track;
@@ -381,7 +382,7 @@ var methods = {
 		var handleleft = timelineslider.data().handleleft;
 		var handleright = timelineslider.data().handleright;
 		// Get left position of thumb
-		var l = timelineslider.timelineSlider("thumbLeft");
+		var l = timelineslider.timelineSlider("_thumbLeft");
 		// Set left handle position
 		handleleft.css("left", l + "px");
 		// Set right handle position
@@ -391,7 +392,7 @@ var methods = {
 		handleleft.draggable( "option", "containment", [ 0, 0, r, 0] );
 		handleright.draggable( "option", "containment", [ Number(l) + ( timelineslider.data().zoomlevel * settings.step ), 0, track.width(), 0] );
 	},
-	setThumbLabel : function() {
+	_setThumbLabel : function() {
 		var timelineslider = $(this);
 		var thumb = timelineslider.data().thumb;
 		var track = timelineslider.data().track;
@@ -405,7 +406,7 @@ var methods = {
 		}
 		thumb.find("label").text( label );
 	},
-	gatherNewValue : function() {
+	_gatherNewValue : function() {
 		var timelineslider = $(this);
 		var data = timelineslider.data();
 		var settings = data.settings;
@@ -430,23 +431,23 @@ var methods = {
 		// Store new values
 		data.from = val.from;
 		data.to = val.to;
-		timelineslider.timelineSlider( "refresh" );
+		timelineslider.timelineSlider( "_refresh" );
 	},
 	getPeriod : function( index ) {
 		var period = $(this).data("settings").periods_flat[index];
 		return period;
 	},
-	thumbLeft : function() {
+	_thumbLeft : function() {
 		var thumb = $(this).data( "thumb" );
 		// Get left position of thumb
-		var thumbleft = Number( thumb.css( "left" ).substring( 0, thumb.css( "left" ).indexOf( "px" ) ) );
-		return thumbleft;
+		var _thumbLeft = Number( thumb.css( "left" ).substring( 0, thumb.css( "left" ).indexOf( "px" ) ) );
+		return _thumbLeft;
 	},
-	updateMouse : function( e ) {
+	_updateMouse : function( e ) {
 		// Get mouse x position
 		$(this).data().mousex = e.pageX;
 	},
-	updateThumb : function() {
+	_updateThumb : function() {
 		var timelineslider = $(this).data( "timelineslider" );
 		var handleleft = timelineslider.data().handleleft;
 		var handleright = timelineslider.data().handleright;
@@ -460,12 +461,12 @@ var methods = {
 		// Set new Thumb position
 		thumb.css( "left", handleleft.css( "left" ) );
 		// Set thumb label
-		timelineslider.timelineSlider( "setThumbLabel" );
+		timelineslider.timelineSlider( "_setThumbLabel" );
 	},
 
 	// Scrolling functions
 
-	doScroll : function( dir ) {
+	_doScroll : function( dir ) {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
 		var track = timelineslider.data().track;
@@ -475,13 +476,13 @@ var methods = {
 		// Animate track
 		track.not( ':animated' ).animate( { scrollLeft: track.scrollLeft() + dir * ( timelineslider.data().zoomlevel * settings.step ) }, 500 / settings.scrollspeed, function() {
 			// Set thumb label
-			timelineslider.timelineSlider( "setThumbLabel" );
+			timelineslider.timelineSlider( "_setThumbLabel" );
 		});
 		// Animate thumb
 		handleleft.hide();
 		handleright.hide();
 		thumb.not( ':animated' ).animate( { left: '+=' + dir * ( timelineslider.data().zoomlevel * settings.step ) * -1 }, 500 / settings.scrollspeed, function() {
-			timelineslider.timelineSlider( "updateHandles" );
+			timelineslider.timelineSlider( "_updateHandles" );
 			handleleft.show();
 			handleright.show();
 		} );
@@ -489,33 +490,33 @@ var methods = {
 
 	// Scaling functions
 
-	startScale : function() {
+	_startScale : function() {
 		// Trigger onScaleStart event
 		$(this).trigger( "onScaleStart" );
 	},
-	scale : function() {
+	_scale : function() {
 		// TODO: Detect side collision
 		var timelineslider = $(this);
 		// Update thumb position and width
-		timelineslider.timelineSlider( "updateThumb" );
+		timelineslider.timelineSlider( "_updateThumb" );
 		// Trigger onScale event
 		timelineslider.trigger( "onScale" );
 	},
-	stopScale : function() {
+	_stopScale : function() {
 		var timelineslider = $(this);
 		// Update thumb position and width
-		timelineslider.timelineSlider( "updateThumb" );
+		timelineslider.timelineSlider( "_updateThumb" );
 		// Set new value
-		timelineslider.data( "timelineslider" ).timelineSlider( "gatherNewValue" );
+		timelineslider.data( "timelineslider" ).timelineSlider( "_gatherNewValue" );
 		// Update handle positions
-		timelineslider.data( "timelineslider" ).timelineSlider( "updateHandles" );
+		timelineslider.data( "timelineslider" ).timelineSlider( "_updateHandles" );
 		// Trigger onScaleStop event
 		timelineslider.trigger( "onScaleStop" );
 	},
 
 	// Sliding functions
 
-	startSlide : function( e ) {
+	_startSlide : function( e ) {
 		var timelineslider = $(this).data().timelineslider;
 		var handleleft = timelineslider.data().handleleft;
 		var handleright = timelineslider.data().handleright;
@@ -523,39 +524,39 @@ var methods = {
 		handleleft.hide();
 		handleright.hide();
 		// Get grab position on thumb
-		var grabposition = e.pageX - timelineslider.timelineSlider( "thumbLeft" );
+		var grabposition = e.pageX - timelineslider.timelineSlider( "_thumbLeft" );
 		timelineslider.data().grabposition = grabposition;
 		// Trigger onSlideStart event
 		timelineslider.trigger( "onSlideStart" );
 	},
-	slide : function( e ) {
+	_slide : function( e ) {
 		var timelineslider = $(this).data().timelineslider;
 		var track = timelineslider.data().track;
 		var step = timelineslider.data().settings.step;
 		var grabposition = timelineslider.data().grabposition;
 		// Update mouse position
-		timelineslider.timelineSlider( "updateMouse", e );
+		timelineslider.timelineSlider( "_updateMouse", e );
 		// Detect side collision
 		if ( timelineslider.data().mousex > track.width() - grabposition || timelineslider.data().mousex < grabposition ) {
-			// Start autoscroll
-			if ( timelineslider.data().autoscroll == null ) {
-				timelineslider.data().autoscroll = setInterval( function() {
-					timelineslider.timelineSlider( 'autoScroll', timelineslider );
+			// Start _autoScroll
+			if ( timelineslider.data()._autoScroll == null ) {
+				timelineslider.data()._autoScroll = setInterval( function() {
+					timelineslider.timelineSlider( '_autoScroll', timelineslider );
 				}, 1000 / timelineslider.data().settings.scrollspeed );
 			}
-		} else if ( timelineslider.data().autoscroll ) {
+		} else if ( timelineslider.data()._autoScroll ) {
 			// End animation
 			track.stop( true, true );
-			// Stop autoscroll
-			clearInterval( timelineslider.data().autoscroll );
-			timelineslider.data().autoscroll = null;
+			// Stop _autoScroll
+			clearInterval( timelineslider.data()._autoScroll );
+			timelineslider.data()._autoScroll = null;
 		}
 		// Set thumb label
-		timelineslider.timelineSlider( "setThumbLabel" );
+		timelineslider.timelineSlider( "_setThumbLabel" );
 		// Trigger onSlide event
 		timelineslider.trigger( "onSlide" );
 	},
-	stopSlide : function( e ) {
+	_stopSlide : function( e ) {
 		var timelineslider = e.data.timelineslider;
 		var track = timelineslider.data().track;
 		var thumb = timelineslider.data().thumb;
@@ -574,22 +575,22 @@ var methods = {
 		}
 		// END NEW CODE
 		// Set thumb label
-		timelineslider.timelineSlider( "setThumbLabel" );
+		timelineslider.timelineSlider( "_setThumbLabel" );
 		// Update handle positions
-		timelineslider.timelineSlider( "updateHandles" );
+		timelineslider.timelineSlider( "_updateHandles" );
 		// Show handles
 		handleleft.show();
 		handleright.show();
-		if ( timelineslider.data().autoscroll ) {
-			// Stop autoscroll
-			clearInterval( timelineslider.data().autoscroll );
+		if ( timelineslider.data()._autoScroll ) {
+			// Stop _autoScroll
+			clearInterval( timelineslider.data()._autoScroll );
 		}
 		// Set new value
-		timelineslider.timelineSlider( "gatherNewValue" );
+		timelineslider.timelineSlider( "_gatherNewValue" );
 		// Trigger onSlideStop event
 		timelineslider.trigger( "onSlideStop" );
 	},
-	autoScroll : function( timelineslider ) {
+	_autoScroll : function( timelineslider ) {
 		var step = timelineslider.data().zoomlevel * timelineslider.data().settings.step;
 		var scrollspeed = timelineslider.data().settings.scrollspeed;
 		var track = timelineslider.data().track;
@@ -617,7 +618,7 @@ var methods = {
 		}
 		if ( diff ) {
 			// Scroll track
-			track.not( ':animated' ).animate( { scrollLeft: track.scrollLeft() + diff}, 500 / scrollspeed, timelineslider.timelineSlider( "setThumbLabel" ) );
+			track.not( ':animated' ).animate( { scrollLeft: track.scrollLeft() + diff}, 500 / scrollspeed, timelineslider.timelineSlider( "_setThumbLabel" ) );
 			// Trigger onAutoScroll event
 			timelineslider.trigger( "onAutoScroll" );
 		}
@@ -625,7 +626,7 @@ var methods = {
 
 	// Zooming functions
 
-	scrollZoom : function(event, delta) {
+	_scrollZoom : function(event, delta) {
 		var timelineslider = $(this).data().timelineslider;
 		var settings = timelineslider.data().settings;
 		if ( delta > 0 && timelineslider.data().zoomlevel + 0.1 <= settings.maxzoom ) {
@@ -648,16 +649,16 @@ var methods = {
 			timelineslider.trigger("zoom");
 		}
 	},
-	zoom : function() {
+	_doZoom : function() {
 		var timelineslider = $(this);
 		var settings = timelineslider.data().settings;
 		var from = timelineslider.data().from;
 		var to = timelineslider.data().to;
 		// Resize periods
 		timelineslider.data().periods.find(".period").css("min-width", timelineslider.data().zoomlevel * settings.step);
-		// Reset currentlevel
+		// Reset currentlevel class
 		timelineslider.data().periods.find(".period").removeClass("currentlevel");
-		// Set currentlevel
+		// Set currentlevel class
 		var level = Math.round( timelineslider.data().zoomlevel );
 		if ( level > settings.maxlevel ) {
 			level = settings.maxlevel;
@@ -668,7 +669,7 @@ var methods = {
 		.width((timelineslider.data().zoomlevel * settings.step) * (to - from) + 2)
 		.css("left", (timelineslider.data().zoomlevel * settings.step) * from + "px");
 		// Center slider
-		timelineslider.timelineSlider("centerSlider", $(this));
+		timelineslider.timelineSlider("_centerSlider", $(this));
 		// Set new grid
 		timelineslider.data().thumb.draggable("option", "grid", [(timelineslider.data().zoomlevel * settings.step), 0]);
 		timelineslider.data().handleleft.draggable("option", "grid", [(timelineslider.data().zoomlevel * settings.step), 0]);
