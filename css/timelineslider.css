@@ -11,6 +11,8 @@ html,body {
 .slider {
 	overflow-x: hidden;
 	overflow-y: visible;
+	padding-top: 7px;
+	position: relative;
 }
 .track {
 	border: 1px solid #969696;
