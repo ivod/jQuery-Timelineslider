@@ -13,7 +13,8 @@
 <script src="js/jquery.ui.touch.js" type="text/javascript"></script>
 <script type="text/javascript">
 $(function() {
-	var json = "json/data.json";
+	var json = "json/data_flat.json"; // flat data
+	//var json = "json/data.json"; // hierarchical data
 	// Get timeline data
 	$.getJSON(json, function(data) {
 		// Create timeline slider

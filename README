@@ -26,14 +26,14 @@
  * maxzoom 				- the maximum zoom level, equal to the deepest period level
  * minzoom 				- minimum zoom level
  * periods 				- JSON object representing the periods, optionally hierarchical
- * scrollspeed			- scroll speed for _autoScroll feature, 0 to disable _autoScroll
+ * scrollspeed			- scroll speed for autoScroll feature, 0 to disable autoScroll
  * step					- minimal width (in pixels) of the period in the timeline
  * to					- index of the last period in selection
  * zoomlevel			- initial zoom level
  * 
  * EVENTS:
  * To add an eventlistener, add this to the option list on init: onEventName: function(){do stuff}
- * onAutoScroll			- triggered when timelineslider is _autoScrolling (when thumb is dragged beyond the viewpane)
+ * onAutoScroll			- triggered when timelineslider is autoScrolling (when thumb is dragged beyond the viewpane)
  * onCreate				- triggered right after creation of the timelineslider 
  * onScaleStart			- triggered when the left or right thumb handles start to get dragged
  * onScale				- triggered when the left or right thumb handles are being dragged
@@ -49,7 +49,7 @@
  * from([index])		- sets from value, when index is omitted gets from value
  * to([index])			- sets to value, when index is omitted gets to value
  * setValue(val)		- sets a new from and to value, accepts an object with from and to {from:val1,to:val2} // OBSOLETE
- * values([val])		- sets sets a new from and to value, accepts an object with from and to {from:val1,to:val2}, when omitted gets values object
+ * values([val])		- sets a new from and to value, accepts an object with from and to {from:val1,to:val2}, when omitted gets values object
  * setZoomLevel(level)	- sets the zoom level, accepts integer // OBSOLETE
  * zoom([level])		- sets zoomlevel value, when level is omitted gets zoomlevel value
  * getPeriod(index)		- returns the period object with the given index
