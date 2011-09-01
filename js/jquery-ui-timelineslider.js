@@ -242,9 +242,11 @@ var methods = {
 		timelineslider.data().periods = periods;
 		// Create thumb
 		var thumb = $("<div>")
+		.disableSelection()
 		.append( $("<label>") )
+		.append( $("<div>").addClass("hotspot") )
 		.addClass( "thumb" )
-		.draggable( { axis:'x', containment: 'parent' } )
+		.draggable( { axis:'x', containment: 'parent', handle: '.hotspot' } )
 		.bind( "dragstart.timelineSlider", methods._startSlide )
 		.bind( "drag.timelineSlider", { timelineslider: timelineslider }, methods._slide )
 		.bind( "dragstop.timelineSlider", { timelineslider: timelineslider }, methods._stopSlide )

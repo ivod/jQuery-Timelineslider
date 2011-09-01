@@ -66,12 +66,18 @@ html,body {
 	text-align: center;
 	white-space: nowrap;
 }
+.thumb .hotspot {
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	width: 100%;
+}
 .handle {
 	background: url(../img/handle_bg.png) no-repeat center center;
 	cursor: e-resize;
 	height: 35px;
 	top: -6px;
-	width: 20px;
+	width: 30px;
 	z-index: 3;
 }
 .handle.left {

@@ -2,3 +2,7 @@
 	zoom: 1;
 	display: inline;
 }
+.thumb .hotspot {
+	background: #000;
+	filter:alpha(opacity=0);
+}
