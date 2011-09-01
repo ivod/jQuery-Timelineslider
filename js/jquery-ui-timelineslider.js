@@ -242,7 +242,6 @@ var methods = {
 		timelineslider.data().periods = periods;
 		// Create thumb
 		var thumb = $("<div>")
-		.disableSelection()
 		.append( $("<label>") )
 		.append( $("<div>").addClass("hotspot") )
 		.addClass( "thumb" )
