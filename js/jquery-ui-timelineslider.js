@@ -128,6 +128,10 @@ var methods = {
 			timelineslider.bind( "onScaleStop", options.onScaleStop );
 			timelineslider.bind( "onAutoScroll", options.onAutoScroll );
 			
+			$(window).bind( "resize", function() {
+				timelineslider.timelineSlider( "_centerSlider" );
+			});
+			
 			// Trigger create event
 			timelineslider.trigger( "onCreate" );
 		});
