@@ -48,9 +48,9 @@
  * To call a method, use $(selector).timelineSlider("nameOfMethod", parameters)
  * from([index])		- sets from value, when index is omitted gets from value
  * to([index])			- sets to value, when index is omitted gets to value
- * setValue(val)		- sets a new from and to value, accepts an object with from and to {from:val1,to:val2} // OBSOLETE
+ * setValue(val)		- sets a new from and to value, accepts an object with from and to {from:val1,to:val2} // OBSOLETE, use value setter
  * values([val])		- sets sets a new from and to value, accepts an object with from and to {from:val1,to:val2}, when omitted gets values object
- * setZoomLevel(level)	- sets the zoom level, accepts integer // OBSOLETE
+ * setZoomLevel(level)	- sets the zoom level, accepts integer // OBSOLETE, use level setter
  * zoom([level])		- sets zoomlevel value, when level is omitted gets zoomlevel value
  * getPeriod(index)		- returns the period object with the given index
  * destroy				- removes the timelineslider component
@@ -117,18 +117,18 @@ var methods = {
 			timelineslider.timelineSlider( "_setThumbLabel" );
 
 			// Init events
-			timelineslider.bind( "onCreate", options.onCreate );
-			timelineslider.bind( "onValueChange", options.onValueChange );
-			timelineslider.bind( "onZoomChange", options.onZoomChange );
-			timelineslider.bind( "onSlideStart", options.onSlideStart );
-			timelineslider.bind( "onSlide", options.onSlide );
-			timelineslider.bind( "onSlideStop", options.onSlideStop );
-			timelineslider.bind( "onScaleStart", options.onScaleStart );
-			timelineslider.bind( "onScale", options.onScale );
-			timelineslider.bind( "onScaleStop", options.onScaleStop );
-			timelineslider.bind( "onAutoScroll", options.onAutoScroll );
+			timelineslider.bind( "onCreate.timelineSlider", options.onCreate );
+			timelineslider.bind( "onValueChange.timelineSlider", options.onValueChange );
+			timelineslider.bind( "onZoomChange.timelineSlider", options.onZoomChange );
+			timelineslider.bind( "onSlideStart.timelineSlider", options.onSlideStart );
+			timelineslider.bind( "onSlide.timelineSlider", options.onSlide );
+			timelineslider.bind( "onSlideStop.timelineSlider", options.onSlideStop );
+			timelineslider.bind( "onScaleStart.timelineSlider", options.onScaleStart );
+			timelineslider.bind( "onScale.timelineSlider", options.onScale );
+			timelineslider.bind( "onScaleStop.timelineSlider", options.onScaleStop );
+			timelineslider.bind( "onAutoScroll.timelineSlider", options.onAutoScroll );
 			
-			$(window).bind( "resize", function() {
+			$(window).bind( "resize.timelineSlider", function() {
 				timelineslider.timelineSlider( "_centerSlider" );
 			});
 			
@@ -305,26 +305,28 @@ var methods = {
 		if ( zoomin.length ) {
 			// Create zoom in button
 			zoomin
-			.bind( "mousedown", function( e ) {
+			.bind( "mousedown.timelineSlider", function( e ) {
 				timelineslider.data( "zooming", setInterval( function( e ) {
 					timelineslider.timelineSlider( "setZoomLevel", settings.zoomspeed )
 				}, 100) );
-			})
-			.bind( "mouseup", function() {
-				clearInterval( timelineslider.data( "zooming" ) );
+				$(document).bind( "mouseup.timelineSlider", function() {
+					clearInterval( timelineslider.data( "zooming" ) );
+					$(document).unbind( "mouseup.timelineSlider" );
+				});
 			})
 			.data( "timelineslider", timelineslider );
 		}
 		if ( zoomout.length ) {
 			// Create zoom out button
 			zoomout
-			.bind( "mousedown", function( e ) {
+			.bind( "mousedown.timelineSlider", function( e ) {
 				timelineslider.data( "zooming", setInterval( function( e ) {
 					timelineslider.timelineSlider( "setZoomLevel", settings.zoomspeed * -1 )
 				}, 100) );
-			})
-			.bind( "mouseup", function() {
-				clearInterval( timelineslider.data( "zooming" ) );
+				$(document).bind( "mouseup.timelineSlider", function() {
+					clearInterval( timelineslider.data( "zooming" ) );
+					$(document).unbind( "mouseup.timelineSlider" );
+				});
 			})
 			.data( "timelineslider", timelineslider );
 		}
@@ -337,21 +339,27 @@ var methods = {
 		var scrollright = timelineslider.find( "#scrollright" );
 		if ( scrollleft.length ) {
 			// Create scroll left button
-			scrollleft.bind( "mousedown", function( e ) {
-				timelineslider.data( "scrolling", setInterval( function( e ) { timelineslider.timelineSlider( "_doScroll", -1 ) }, 100) );
-			})
-			.bind( "mouseup", function() {
-				clearInterval( timelineslider.data( "scrolling" ) );
+			scrollleft.bind( "mousedown.timelineSlider", function( e ) {
+				timelineslider.data( "scrolling", setInterval( function( e ) {
+					timelineslider.timelineSlider( "_doScroll", -1 )
+				}, 100) );
+				$(document).bind( "mouseup.timelineSlider", function() {
+					clearInterval( timelineslider.data( "scrolling" ) );
+					$(document).unbind( "mouseup.timelineSlider" );
+				});
 			})
 			.data( "timelineslider", timelineslider );
 		}
 		if ( scrollright.length ) {
 			// Create scroll right button
-			scrollright.bind( "mousedown", function( e ) {
-				timelineslider.data( "scrolling", setInterval( function( e ) { timelineslider.timelineSlider( "_doScroll", 1 ) }, 100) );
-			})
-			.bind( "mouseup", function() {
-				clearInterval( timelineslider.data( "scrolling" ) );
+			scrollright.bind( "mousedown.timelineSlider", function( e ) {
+				timelineslider.data( "scrolling", setInterval( function( e ) {
+					timelineslider.timelineSlider( "_doScroll", 1 )
+				}, 100) );
+				$(document).bind( "mouseup.timelineSlider", function() {
+					clearInterval( timelineslider.data( "scrolling" ) );
+					$(document).unbind( "mouseup.timelineSlider" );
+				})
 			})
 			.data( "timelineslider", timelineslider );
 		}

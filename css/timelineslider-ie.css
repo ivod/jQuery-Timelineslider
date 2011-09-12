@@ -1,5 +1,6 @@
 .period {
 	zoom: 1;
+	*display: inline; /* lt IE8 */
 }
 .thumb .hotspot {
 	background: #000;
